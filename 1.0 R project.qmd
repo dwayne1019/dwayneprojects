@@ -1,0 +1,672 @@
+---
+title: "Group Project Case 2: How do global asset returns influence the performance of the Singapore Straits Times Index?"
+subtitle: "ACCT337 Statistical Programming 2025"
+author: "Group 7 (Dwayne, Wei Le, Jin Yan, Jovin, Jun Jie)"
+format: 
+  html:
+    self-contained: true
+execute: 
+  eval: true
+  echo: true
+editor: source
+---
+
+
+# Instructions
+
+- The Straits Times Index (STI) is Singapore's benchmark stock market index, representing the performance of the top 30 companies listed on the Singapore Exchange (SGX). It is widely used as a gauge of the overall market performance in Singapore.
+
+- You will be examining how STI return correlates with other assets' returns between 2014 and 2023 using data obtained from the `tidyquant` package.
+
+- You must include the S&P 500 as one of the assets and choose at least two additional asset. Options include:
+
+  - Major stock indices in non-US countries (e.g., Shanghai Composite Index, Nikkei 225, FTSE 100)
+  - Fixed income assets (e.g., U.S. Treasury bond yields, Singapore Government Securities)
+  - Cryptocurrencies (e.g., Bitcoin)
+  - Commodities (e.g., oil, gold)
+
+- Your objective is to analyze the relationship between STI returns and the chosen asset returns.
+
+---
+
+## Setting up
+
+- Please set up the environment and load your required libraries and dataset.
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyquant)
+library(tidyverse)
+library(DescTools)
+library(gridExtra)
+```
+
+---
+
+## Section 1: Introduction
+
+- Introduce to your audience what you are going to study in this project, what insights the study may generate, and who may benefit from those insights.
+- Provide a broad discussion on the potential factors that may drive a correlation between two assets' returns.
+
+## Answer
+
+With globalisation, investors have been diversifying the risks of investments by tapping into overseas markets. This is beneficial as diversification can help enhance returns, and mitigate risks associated with domestic market fluctuations (Sommer, 2025).  A recent article published by Straits Time suggests that local Singaporean investors are shifting away from Singapore stocks, seeking for greater returns in less time by purchasing US equities ("Brokerages see s’porean investors shifting away from local stocks to Us”, 2025). Therefore, this case study would like to explore how investors can leverage international diversification to maximise their returns. Specifically, the indices from US and China will be used in the analysis as in 2025, as they possess the largest market capitalization for listed companies in 2025 ( Statista Research Department, 2025). Taking into account Singapore’s appetite for risk, it is also important to consider low-risk assets given economic uncertainty in 2025.  Hence, gold commodities will be taken into comparison as they are known to stay resilient given bad macroeconomic conditions ( Ryan, Corbet & Oxley, 2024). 
+
+In the Budget 2025 statement, MAS mentioned a 5 billion dollar programme to partner with selected fund managers to increase retail and institutional investors investments in Singapore. The intention is to create fund strategies that have a substantial component in Singapore equities, with the remaining from overseas equities (Tan, 2025). Hence, this case study primarily targets fund managers who would be interested in knowing the relationship between STI and various asset types, to curate funds to meet the needs of varying retail and institutional investors. According to a Deloitte report, fund managers in Singapore are required to make quarter and annual reports (Fund management in Singapore a summary of the regulatory and tax framework, n.d). Hence, to be consistent, the analysis will also use quarterly figures to be consistent with the reporting standard of fund managers in Singapore. 
+
+This case study explores the factors driving this shift, the impact of global asset returns on Singaporean portfolios, and how investors can leverage international diversification to enhance returns and manage risks more effectively. By understanding these dynamics, investors and policymakers can develop strategies that align with evolving market trends and opportunities in the global investment landscape.
+
+## Answer
+
+1.) On a broad scale, the macroeconomic conditions of the economy will drive a correlation between two assets’ return. This is evident in the recent tariffs implemented by Trump, which has caused markets in regions such as Singapore to tumble 8.5%, Taiwan close to 10%, South Korea 5.5% (TOI Business Desk, 2025). The reason for such correlation is because the “US has the world’s single largest economy, accounting for almost a quarter of global GDP”. Furthermore, the US dollar is a widely used currency for global trade and transactions, which is affected by US monetary policy. Hence, the macroeconomic conditions, which are heavily influenced by the US, would drive a correlation between two assets’ return ( Stocker, Lakatos, Ohnsorge & Kose, 2017). 
+
+2.) Industry and Sector Exposure
+- Sector Sensitivity: Stocks in the same industry or sector tend to have higher correlations. For instance, tech stocks in the S&P 500 and the STI might have higher correlation if they are both affected by the same technological developments, regulatory changes, or supply chain issues (Winkler & Gallagher, 2025).
+
+- Global Supply Chains: Companies involved in global supply chains may be more sensitive to changes in demand and supply dynamics worldwide. A shock in one region (e.g., supply chain disruptions due to COVID-19) could cause multiple markets to correlate more closely.
+
+3.) Globalization and Integration:
+- International Markets: In today's globalized economy, markets around the world are more interconnected. A financial crisis or major event in one country (e.g., the US subprime mortgage crisis) can affect stock indices and other assets worldwide due to cross-border investments, trade flows, and financial ties (Market stress signals are flashing bright, 2025).
+
+4.) Risk and Return Characteristics:
+- Risk Appetite: Investors' risk preferences play a role in how assets correlate. In periods of heightened risk aversion, assets perceived as "safe" (e.g., gold, government bonds) may correlate negatively with more volatile assets like equities (Gold as an investment, 2024).
+
+## Section 2: Hypothesis Development
+
+- Introduce the **three** assets you have chosen.
+- Develop your hypotheses on how these asset returns may relate to STI returns.
+- Clearly state your expected predictions.
+
+## Answer
+
+# S&P 500 
+The S&P 500 was launched in 1957 by Standard and Poor, a credit rating agency. It is an index of 500 leading publicly traded companies in the U.S. It is considered one of the most reflective indexes because of its depth and diversities. Hence, it is often used as a benchmark to track portfolio performance (Kenton, 2024)
+
+# SSE Shanghai Composite Index
+Is a stock market composite that has class A (quoted in Chinese Yuan) and class B (quoted in foreign currency), and was created on July 15th, 1991. SSE index consists of companies of a wide range in terms of performance, compared to indexes such as S&P 500 which focuses on top performing companies. Hence, giving a broad overview of the overall performance of the Shanghai stock market. It is also important to note that China’ stock market is relatively new, and is primarily made up of individuals (Chen, 2024). 
+
+# Gold (GC = F)
+Is a future contract that is traded on the COMEX exchange, as part of the Chicago Mercantile Exchange (Gold Overview - CME Group. Futures & Options Trading for Risk Management, 2025).. A future contract is a legal agreement between a buyer and seller to trade assets such as commodities, at a predetermined price and at a specific period. It is an investment tool that allows investors to speculate on the price of commodities, such as gold (Hayes, 2024). 
+
+## Hypothesis 1 (S&P500)
+# US Federal Interest Rate (Positive Correlation)
+- A change in federal interest rate has a rippling effect on the global economy. This is especially seen in Singapore, as Singapore’s central bank (MAS) does not directly control their interest rates. Instead, they are pegged against their major trading partners to maintain price stability, including the US (Chieh & Suresh, 2024). In the last quarter of 2024, there were sentiments that federal rates would plunge, where the Singapore stock market “likely to benefit from lower interest rates” (Sreenivasan, 2024). This may indicate a potential factor that drives a correlation between S&P 500 and STI.
+
+# US Inflation Rates (Negative Correlation)
+- According to Morgan Stanley’s analysts, the stock market in Singapore may gain due to inflation, tariffs and immigration policies. Due to uncertainty in the US, investors are likely to decrease their positions in US equities, and shift towards safe haven assets, such as Singapore (Inflation fears tied to U.S. policies could boost Singapore Equities, 2024). Hence, fiscal and monetary US policies could be a factor that drives a negative correlation between S&P 500 and STI. 
+
+It is hypothesised that STI will have a weak positive correlation against S&P 500. 
+
+## Hypothesis 2 (Gold)
+# Macroeconomic circumstance (Neutral correlation) 
+- According to the World Gold Council, gold is “often often correlated with the stock market during risk-on periods... (and) decouples and become inversely correlated during periods of stress”. Hence, economic conditions acts as a confounding factor, influencing the performance of gold and stock markets, such as those in STI. This is further supported by an analyst stating, “Gold and stocks are not supposed to be correlated, but they often are due to the shared economic factors and speculative shifts”.
+
+It is hypothesised that STI will have a very weak negative correlation against Gold. Though weak, equities and commodity tend to have different risk factors, which would imply a more negative than positive relationship. 
+
+## Hypothesis 3 (Shanghai Index)
+# China and Singapore trading relations (Positive correlation)
+- China has been Singapore’s largest trading partner since 2013. Singapore has also been the largest source of new investments in China (Xiao, 2024). Hence, because of the integration of both economies, an index movement in one country would likely have a similar effect on another. 
+
+# Sector composition (Positive correlation)
+- STI is composed largely of stocks from the financial sectors, 52.89% (Choo, 2024). This is similarly seen in SSE as their leading industry sector in 2024 is Financial and Real Estate with 27.4% composition (Shanghai SSE Composite Index Sector Weightings, 2025). Hence, if the financial sector outperforms the other industries, both indexes will likely benefit greatly from it, vice versa. 
+
+It is hypothesised that STI will have a weak positive correlation against SSE Composite Index. 
+ 
+
+
+## Section 3: Data Collection and Cleaning
+
+- Include your code here to obtain the datasets using `tidyquant`, clean the datasets, merge them, and create necessary variables before analysis.
+- Clearly state what `ticker` you are using to obtain the related assets' price data, how you define and create the return variables (e.g., daily or quarterly), handle missing values, and remove outliers.
+
+```{r}
+
+# ---------------------------------------
+#  Retrieve and Process Financial Data (2014–2023)
+# ---------------------------------------
+
+STI <- tq_get("^STI", from = "2014-01-01", to = "2023-12-31")  # Straits Times Index
+SnP500 <- tq_get("^GSPC", from = "2014-01-01", to = "2023-12-31")  # S&P 500
+Gold <- tq_get("GC=F", from = "2014-01-01", to = "2023-12-31")  # Gold futures
+Shanghai_Index <- tq_get("000001.SS", from = "2014-01-01", to = "2023-12-31")  # Shanghai Composite Index
+
+# ---------------------------------------
+#  Create Lag Variable for STI to Analyze Quarterly Returns
+# ---------------------------------------
+
+#Select last price per quarter
+STI_qtr<- STI |>
+  mutate(quarter = quarter(date, with_year = TRUE)) |> 
+  group_by(quarter) |> 
+  filter(date == max(date))
+
+#Create lagged prices and calculate quarterly returns
+STI_qtr<- STI_qtr |>
+  ungroup() |> 
+  arrange(quarter) |> 
+  mutate(lag_adjusted = lag(adjusted, n=1)) |> 
+  mutate(quarterly_return = adjusted/lag_adjusted - 1) |> 
+  select(symbol, quarter,quarterly_return)
+
+# ---------------------------------------
+#  Create Lag Variable for S&P 500 to Analyze Quarterly Returns
+# ---------------------------------------
+
+#Select last price per quarter
+SnP500_qtr<- SnP500 |>
+  mutate(quarter = quarter(date, with_year = TRUE)) |> 
+  group_by(quarter) |> 
+  filter(date == max(date))
+
+#Create lagged prices and calculate quarterly returns
+SnP500_qtr<- SnP500_qtr |>
+  ungroup() |> 
+  arrange(quarter) |> 
+  mutate(lag_adjusted = lag(adjusted, n=1)) |> 
+  mutate(quarterly_return = adjusted/lag_adjusted - 1) |> 
+  select(symbol, quarter,quarterly_return)
+
+# ---------------------------------------
+#  Create Lag Variable for Gold to Analyze Quarterly Returns
+# ---------------------------------------
+
+#Select last price per quarter
+Gold_qtr<- Gold |>
+  mutate(quarter = quarter(date, with_year = TRUE)) |> 
+  group_by(quarter) |> 
+  filter(date == max(date))
+
+#Create lagged prices and calculate quarterly returns
+Gold_qtr<- Gold_qtr |>
+  ungroup() |> 
+  arrange(quarter) |> 
+  mutate(lag_adjusted = lag(adjusted, n=1)) |> 
+  mutate(quarterly_return = adjusted/lag_adjusted - 1) |> 
+  select(symbol, quarter,quarterly_return)
+
+# ---------------------------------------
+#  Create Lag Variable for Shanghai Composite Index to Analyze Quarterly Returns
+# ---------------------------------------
+
+#Select last price per quarter
+ShanghaiIndex_qtr<- Shanghai_Index |>
+  mutate(quarter = quarter(date, with_year = TRUE)) |> 
+  group_by(quarter) |> 
+  filter(date == max(date))
+
+#Create lagged prices and calculate quarterly returns
+ShanghaiIndex_qtr<- ShanghaiIndex_qtr |>
+  ungroup() |> 
+  arrange(quarter) |> 
+  mutate(lag_adjusted = lag(adjusted, n=1)) |> 
+  mutate(quarterly_return = adjusted/lag_adjusted - 1) |> 
+  select(symbol, quarter,quarterly_return)
+```
+
+```{r}
+
+# ---------------------------------------
+#  Merge and Reshape Quarterly Return Data by Asset
+# ---------------------------------------
+
+Combined_Data <- STI_qtr %>% 
+  inner_join(SnP500_qtr , by = "quarter") %>% 
+  inner_join(Gold_qtr , by = "quarter") %>% 
+  inner_join(ShanghaiIndex_qtr , by = "quarter")
+
+Combined_Data <- Combined_Data |> 
+     rename(
+         STI = symbol.x,                # Rename 'symbol.x' to 'STI' for clarity
+         STI_qtr_return = quarterly_return.x,     # Rename 'adjusted.x' to 'STI_qtr_return'
+         SnP500 = symbol.y,           # Rename 'symbol.y' to 'SnP500'
+         SnP500_qtr_return = quarterly_return.y,# Rename 'adjusted.y' to 'SnP500_qtr_return'
+         Gold = symbol.x.x,             # Rename 'symbol.x.x' to 'Gold'
+         Gold_qtr_return = quarterly_return.x.x, # Rename 'adjusted.x.x' to 'Gold_qtr_return'
+         ShanghaiIndex = symbol.y.y,   # Rename 'symbol.y.y' to 'ShanghaiIndex'
+         ShanghaiIndex_qtr_return = quarterly_return.y.y # Rename 'adjusted.y.y' to 'ShanghaiIndex_qtr_return' 
+         ) %>% 
+         drop_na( STI_qtr_return, SnP500_qtr_return, Gold_qtr_return,  ShanghaiIndex_qtr_return)  # Remove rows with missing adjusted data
+
+# Reshape data from wide to long format
+Combined_All_Long <- Combined_Data %>%
+  pivot_longer(
+    cols = starts_with("STI_qtr_return") |
+           starts_with("SnP500_qtr_return") |
+           starts_with("Gold_qtr_return") |
+           starts_with("ShanghaiIndex_qtr_return"),
+    names_to = "Asset",
+    values_to = "QuarterlyReturn"
+  ) %>% 
+  select("Asset","QuarterlyReturn","quarter") %>% 
+  group_by(quarter)
+ 
+
+# 1. Merging STI and S&P 500 data based on common quarters
+STI_SnP500 <- STI_qtr |> 
+  inner_join(SnP500_qtr, by = "quarter") |> 
+  rename(
+    STI = symbol.x,
+    STI_qtr_return = quarterly_return.x,
+    SnP500 = symbol.y,
+    SnP500_qtr_return = quarterly_return.y
+  )
+
+# 2. Merging STI and Gold data based on common quarters
+STI_Gold <- STI_qtr |> 
+  inner_join(Gold_qtr, by = "quarter") |> 
+  rename(
+    STI = symbol.x,
+    STI_qtr_return = quarterly_return.x,
+    Gold = symbol.y,
+    Gold_qtr_return = quarterly_return.y
+  )
+
+# 3. Merging STI and Shanghai Composite Index data based on common quarters
+STI_ShanghaiIndex <- STI_qtr |> 
+  inner_join(ShanghaiIndex_qtr, by = "quarter") |> 
+  rename(
+    STI = symbol.x,
+    STI_qtr_return = quarterly_return.x,
+    ShanghaiIndex = symbol.y,
+    ShanghaiIndex_qtr_return = quarterly_return.y
+  )
+
+```
+
+```{r}
+# ---------------------------------------
+#  Transform Data for Quarterly Returns by Asset
+# ---------------------------------------
+
+STI_SnP500_long<- STI_SnP500 |> 
+  pivot_longer(
+    cols = starts_with("STI_qtr_return") |
+           starts_with("SnP500_qtr_return"),
+               names_to = "Asset", values_to = "QuarterlyReturn")
+
+STI_Gold_long<- STI_Gold |> 
+  pivot_longer(
+    cols = starts_with("STI_qtr_return") |
+           starts_with("Gold_qtr_return"),
+               names_to = "Asset", values_to = "QuarterlyReturn")
+
+STI_ShanghaiIndex_long<- STI_ShanghaiIndex |> 
+  pivot_longer(
+    cols = starts_with("STI_qtr_return") |
+           starts_with("ShanghaiIndex_qtr_return"),
+               names_to = "Asset", values_to = "QuarterlyReturn")
+
+```
+
+## Section 4: Sample Description
+
+- Provide necessary statistics and graphs to describe your sample:
+  - How many observations are there?
+  - What are the key summary statistics of your variables? What are their distributions? How are they different across the STI, S&P 500, and your chosen assets?
+  
+## Answer
+
+There are 40 observations for each assets (4 quarters over 10 years) with NA observation for the first quarter since computations require the last date of the previous quarter (31/12/2012) which is out of range 
+
+```{r}
+
+# ---------------------------------------
+# 1. Key Summary Statistics for STI, S&P500, Gold, Shanghai Index (2014–2023)
+# ---------------------------------------
+
+summary(STI_SnP500)
+summary(STI_Gold)
+summary(STI_ShanghaiIndex)
+
+# ---------------------------------------
+# 2. Create Line Graphs for Each Asset Comparison
+# ---------------------------------------
+
+# STI vs S&P 500
+STI_SandP500_Graph <- ggplot(STI_SnP500_long, aes(x = quarter, y = QuarterlyReturn*100, color = Asset)) + 
+  geom_line() + 
+  ggtitle("STI vs S&P 500") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+# STI vs Gold
+STI_Gold_Graph <- ggplot(STI_Gold_long, aes(x = quarter, y = QuarterlyReturn*100, color = Asset)) + 
+  geom_line() + 
+  ggtitle("STI vs Gold") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+# STI vs Shanghai Index
+STI_ShanghaiIndex_Graph <- ggplot(STI_ShanghaiIndex_long, aes(x = quarter, y = QuarterlyReturn*100, color = Asset)) + 
+  geom_line() + 
+  ggtitle("STI vs Shanghai Index") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+# ---------------------------------------
+# 3. Arrange and Display the Graphs
+# ---------------------------------------
+grid.arrange(STI_SandP500_Graph, STI_Gold_Graph, STI_ShanghaiIndex_Graph, ncol = 2)
+
+```
+
+## Answer
+
+#STI & S&P500
+
+Both STI & S&P 500 show similar patterns with strong correlation during major market events such as the early 2020 Covid crash. S&P500 also shows more extreme spikes for both positive and negative returns, being slightly more volatile than STI.
+
+#STI & Gold
+
+Gold then behaves differently, often moving in the opposite direction of STI. One example is where STI was declining during the Covid19 Pandemic, Gold had strong positive quarters, suggesting that Gold is able to act as a hedge during equity downturns.
+
+
+#STI & Shanghai Index
+
+Shanghai Index shows the most volatile movement- spiking above 30% and below 20% on quarterly returns. When compared to Shanghai Index, STI is less volatile and more stable.
+
+```{r}
+# ---------------------------------------
+#  Comparison of Quarterly Returns: STI, S&P 500, Gold, and Shanghai Index
+# ---------------------------------------
+
+ggplot(Combined_All_Long, aes(x = quarter, y = QuarterlyReturn*100, color = Asset)) + 
+  geom_line() + 
+  ggtitle("Comparison of Quarterly Returns: STI, S&P 500, Gold, and Shanghai Index") + 
+  xlab("Quarter") + 
+  ylab("Quarterly Return (%)") + 
+  theme_minimal(base_size = 14) +  # Cleaner background
+  scale_color_manual(values = c("STI_qtr_return" = "skyblue", 
+                               "SnP500_qtr_return" = "orange", 
+                               "Gold_qtr_return" = "gold", 
+                               "ShanghaiIndex_qtr_return" = "lightgreen")) +  # Custom color palette
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.title = element_text(face = "bold", size = 13, hjust = 0.5), 
+        legend.position = "bottom", 
+        legend.title = element_text(face = "bold"), 
+        legend.text = element_text(size = 10))  # Improved legend readability
+```
+
+```{r}
+# ---------------------------------------
+#  Visualize Quarterly Returns Distribution by Asset
+# ---------------------------------------
+
+ggplot(Combined_All_Long, aes(x = Asset, y = QuarterlyReturn*100, fill = Asset)) + 
+  geom_boxplot(outlier.shape = 16, outlier.colour = "red", outlier.size = 3) +
+  theme_minimal(base_size = 14) +
+  scale_fill_manual(values = c(
+    "STI_qtr_return" = "skyblue", 
+    "SandP500_qtr_return" = "orange", 
+    "Gold_qtr_return" = "gold", 
+    "ShanghaiIndex_qtr_return" = "lightgreen")) + 
+  labs(
+    title = "Quarterly Returns by Asset (2014–2023)",
+    x = "Asset",
+    y = "Quarterly Return (%)"
+  ) + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    legend.position = "none"  # <- this removes the legend
+  )
+
+
+```
+## Answer
+
+# Performance and Volatility Overview (2014–2023)
+Based on both the boxplot and the summary statistics from 2014 to 2023, we can evaluate and compare the quarterly performance of the four assets—Gold, Shanghai Index, S&P 500, and STI—in terms of returns and volatility.
+
+From the boxplot, the Shanghai Index stands out as the most volatile asset. It exhibits the widest spread between the quartiles and the most extreme outliers, with quarterly returns ranging from approximately -28.6% to +36.8%. This is consistent with its summary statistics, which show a high maximum return and a low minimum return, suggesting frequent and substantial fluctuations. The interquartile range (IQR) is also relatively wide at 0.08706, indicating that even the middle 50% of its returns are quite spread out. These characteristics highlight that while the Shanghai Index can offer high returns in some quarters, it also comes with significant downside risk.
+
+The S&P 500, on the other hand, shows a more balanced profile. Its boxplot reflects moderate volatility, with several outliers but a narrower IQR at 0.068031 compared to the Shanghai Index. The summary statistics indicate that the S&P 500 had the highest median (3.79%) and mean (2.73%) quarterly return among the four assets. This suggests that the S&P 500 not only provided relatively stable returns over the period but also outperformed the others on average, making it an attractive option for investors seeking a balance between return and risk.
+
+Gold appears to be less volatile than the Shanghai Index but slightly more volatile than the STI. Its boxplot shows a moderate spread and fewer extreme outliers. The mean quarterly return for gold was around 1.43%, with a median of 1.26%, which suggests a steady but modest return profile. Gold’s performance shows characteristics of a defensive asset—less prone to sharp swings compared to equities, while still offering positive returns over time.
+
+Lastly, the STI (Straits Times Index) had the lowest volatility among the four, as seen in its narrow box and relatively fewer outliers on the boxplot. The IQR is the smallest at 0.047179, and the data is more tightly clustered around the median. However, this stability comes with a trade-off: the STI had the lowest average return (mean of 0.27% and median of 0.71%) over the period. This suggests that while the STI may be suitable for conservative investors seeking low risk, it may not be ideal for those aiming for higher returns.
+
+# Outlier Analysis Across Assets
+In addition to the general spread and central tendencies, the presence and nature of outliers across the different assets provide deeper insight into their risk profiles.
+
+The Shanghai Index had the most extreme and frequent outliers, with quarterly returns significantly deviating from the norm—ranging from substantial gains above +36% to deep losses nearing -29%. These outliers fall outside the typical range defined by ±1.5 times the IQR (1.5 × 0.08706), which confirms heightened sensitivity to market shocks, policy interventions, and speculative movements commonly observed in emerging markets.
+
+The S&P 500 also exhibited several outliers, particularly in the range of -20% to +20%, though they were less extreme than those of the Shanghai Index. These outliers (beyond ±1.5 × 0.068031) are largely attributable to major global events such as the COVID-19 crisis and subsequent stimulus-fueled rebounds. However, given the mature and robust structure of the U.S. market, these shocks were relatively contained, and the index often showed a swift recovery—demonstrating resilience.
+
+The STI had relatively fewer and milder outliers, most of which were on the downside. These occasional sharp drops, beyond ±1.5 × 0.047179, likely coincided with periods of global economic stress or regional downturns that affected Singapore’s export-driven economy. Notably, the STI lacked strong positive outliers altogether, reinforcing its identity as a conservative, low-volatility asset that seldom experiences dramatic movements in either direction.
+
+Overall Comparative Evaluation
+Overall, the pattern of outliers complements the broader observations on volatility and return. The Shanghai Index remains the most volatile with unpredictable swings, making it suitable only for risk-tolerant investors or speculative plays. The S&P 500 offers the best risk-return tradeoff, combining strong average returns with a relatively controlled risk profile. Gold occupies the middle ground with modest, stable returns and moderate volatility, acting as a hedge in turbulent times. The STI, while being the least volatile and most stable, offers the lowest returns, making it appropriate for highly risk-averse investors.
+
+## Section 5: Regression Analysis
+
+- Conduct three simple linear regressions, each using STI return as the outcome variable and one of your chosen asset returns as the independent variable.
+  - Analyze the results and discuss whether they are consistent with your predictions in Section 2.
+- Conduct a multiple linear regression using STI return as the outcome variable and all selected asset returns as explanatory variables.
+  - Analyze the results and discuss how they differ from the simple linear regressions. If there are differences, explain what they may suggest.
+
+
+```{r}
+# ---------------------------------------
+#  Convert Quarterly Returns to Percentages for Asset Comparisons
+# ---------------------------------------
+
+STI_SnP500_Percent <- STI_SnP500 |> 
+  mutate(
+    STI_qtr_return = STI_qtr_return * 100,
+    SnP500_qtr_return = SnP500_qtr_return * 100
+  )
+
+STI_Gold_Percent <- STI_Gold |> 
+  mutate(
+    STI_qtr_return = STI_qtr_return * 100,
+    Gold_qtr_return = Gold_qtr_return * 100
+  )
+
+STI_ShanghaiIndex_Percent <- STI_ShanghaiIndex |> 
+  mutate(
+    STI_qtr_return = STI_qtr_return * 100,
+    ShanghaiIndex_qtr_return = ShanghaiIndex_qtr_return * 100
+  )
+```
+
+```{r}
+# ---------------------------------------
+#  Linear Regression Models for STI and S&P500 Quarterly Returns
+# ---------------------------------------
+
+lm_model_STI_SnP500 <- lm(STI_qtr_return ~ SnP500_qtr_return, data = STI_SnP500_Percent)
+summary(lm_model_STI_SnP500)
+summary(lm_model_STI_SnP500)$r.squared
+```
+
+# Answer
+
+The coefficient on SnP500_qtr_return suggests that an increase of 1% in SnP500 quarterly return is associated with a 0.5415% increase in STI quarterly return; with a p-value of less than 1%, we can say the effect is significant at the 1% level.
+R-squared is 0.402681  meaning around 40.2% of variation in STI_qtr_return is explained by SnP500_qtr_return
+
+This disproves our hypothesis, as the STI and S&P 500 exhibit a moderately positive correlation, rather than the weak positive correlation we initially expected.
+
+```{r}
+# ---------------------------------------
+#  Linear Regression Models for STI and Gold Quarterly Returns
+# ---------------------------------------
+
+lm_model_STI_Gold <- lm(STI_qtr_return ~ Gold_qtr_return , data = STI_Gold_Percent)
+summary(lm_model_STI_Gold)
+summary(lm_model_STI_Gold)$r.squared
+```
+
+# Answer
+
+The coefficient on Gold_qtr_return suggests that an increase of 1% in Gold quarterly return is associated with a 0.07634% increase in STI quarterly return; with a p-value of more than 10%, we can say the effect is not significant at the 10% level.
+R-squared is 0.005650595 meaning around 0.565% of variation in STI_qtr_return is explained by Gold_qtr_return
+
+This disproves our hypothesis, as the STI and Gold exhibit a very weak positive correlation, rather than a very weak negative correlation we initially expected.
+
+```{r}
+# ---------------------------------------
+#  Linear Regression Models for STI and Shanghai Index Quarterly Returns
+# ---------------------------------------
+
+lm_model_STI_ShanghaiIndex <- lm(STI_qtr_return ~ ShanghaiIndex_qtr_return, data = STI_ShanghaiIndex_Percent)
+summary(lm_model_STI_ShanghaiIndex)
+summary(lm_model_STI_ShanghaiIndex)$r.squared
+```
+
+# Answer
+
+The coefficient on ShanghaiIndex_qtr_return suggests that an increase of 1% in SSE quarterly return is associated with a 0.224% increase in STI quarterly return; with a p-value of less than 5%, we can say the effect is significant at the 5% level.
+R-squared is 0.1432574 meaning around 14.33% of variation in STI_qtr_return is explained by ShanghaiIndex_qtr_return
+
+This disproves our hypothesis, as the STI and Shanghai Index exhibit a weak positive correlation.
+
+The reason for this could be because we only considered the fundamental factors that may suggest a correlation. Whereas upon further analysis, we found that Shanghai's Index have strict regulations when it comes to investments of foreigners. According to their website, they only allow qualified investors to access Chinese financial products, and these products must be permitted and have quota limits. Hence, the Shanghai Index presents itself as more isolated compared to indexes such as S&P 500, suggesting less factors which may explain a direct correlation between STI and Shanghai Index (Shanghai Stock Exchange, n.d).
+
+```{r}
+# ---------------------------------------
+#  Multiple Linear Regression Model for all assets Quarterly Returns
+# ---------------------------------------
+
+lm_model_combined <- lm(STI_qtr_return ~ SnP500_qtr_return + Gold_qtr_return + ShanghaiIndex_qtr_return , data = Combined_Data)
+summary(lm_model_combined)
+summary(lm_model_combined)$r.squared
+```
+## Answer
+
+1. S&P 500 (SnP500_qtr_return):
+Coefficient Changes: The coefficient for S&P 500 quarterly return changes from 0.5415 in the simple regression to 0.5083 in the multiple regression. The sign remains positive, but the magnitude shrinks slightly. This suggests that when other factors (Gold and Shanghai Index returns) are included in the model, the impact of the S&P 500 on the STI quarterly return decreases slightly but still remains statistically significant.
+
+   - p-value: Very low (less than 1%)
+   - The p-value for S&P 500 is significantly low, indicating that S&P 500 quarterly returns are a statistically significant predictor of STI quarterly returns. This confirms the strong positive relationship observed in the simple regression model, where changes in the S&P 500 have a substantial impact on STI.
+   - R-squared in the multiple regression is 0.4190, which is higher than the R-squared of 0.4027 from the simple regression with only S&P 500. This suggests that the additional variables (Gold and Shanghai Index returns) improve the model slightly, but S&P 500 still explains a greater portion of the variability in STI quarterly returns.
+
+2. Gold (Gold_qtr_return):
+
+The coefficient for Gold quarterly return changes from 0.07634 in the simple regression to -0.0493 in the multiple regression. The sign flips from positive to negative, and the magnitude shrinks. This indicates that when we control for the effects of the S&P 500 and Shanghai Index, Gold's impact on the STI quarterly return becomes negative and statistically insignificant.
+
+   - p-value: 0.726 (greater than 10%)
+   -The R-squared value for the multiple regression model is 0.4190, which is significantly higher than the R-squared of 0.000565 from the simple regression with only Gold. This indicates that the inclusion of additional variables, such as the S&P 500 and Shanghai Index returns, substantially improves the model. The S&P 500, in particular, explains a much greater portion of the variability in STI quarterly returns. In the context of the multiple regression, this suggests that Gold's contribution to explaining the variability in STI returns is virtually negligible once the other variables are accounted for. Therefore, despite Gold's inclusion, it does not provide meaningful explanatory power for STI quarterly returns
+
+3. Shanghai Index (ShanghaiIndex_qtr_return):
+
+The coefficient for Shanghai Index quarterly return changes from 0.224 in the simple regression to 0.0699 in the multiple regression. While the magnitude decreases, the sign remains positive. However, its statistical significance diminishes in the multiple regression, as the p-value increases, indicating that when controlling for other factors, the Shanghai Index's effect on the STI quarterly return is weaker and less significant.
+
+   - p-value: 0.4292 (greater than 10%)
+   - The R-squared value for the multiple regression model is 0.4190, which is significantly higher than the R-squared of 0.1433 from the simple regression with only ShanghaiIndex. This indicates that the inclusion of additional variables, such as the S&P 500, substantially improves the model. This implies that while the Shanghai Index has some influence on the STI in isolation, it becomes less impactful when S&P 500 is also considered. Thus, the S&P 500 in particular, explains a much greater portion of the variability in STI quarterly returns. 
+
+
+## Section 6: Conclusion
+
+- Summarize your findings and their implications.
+- Discuss any limitations of your study.
+- Suggest potential future research directions or improvements.
+
+## Answer
+
+### 1. Summary of Findings and Implications
+
+Our analysis examined how Singaporean investors can leverage international diversification by studying the relationships between the STI, S&P 500, Shanghai Index, and Gold using quarterly data from 2014 to 2023. We aimed to determine how returns from major global assets affect Singapore’s domestic stock performance, particularly to inform fund managers shaping diversified portfolios.
+
+Key findings include:
+
+- S&P 500: Exhibits a moderately strong and statistically significant positive correlation with STI returns. Both simple and multiple regression results consistently show that when the S&P 500 rises by 1%, STI tends to increase by around 0.51–0.54%. This suggests that U.S. market performance is a key driver of STI movements, likely due to globalization, strong trade linkages, and investor sentiment spillovers.
+  
+- Gold displays a very weak and statistically insignificant relationship with STI returns. In the simple regression, the coefficient was +0.07634, indicating a slight positive relationship, but this was not statistically significant (p-value > 10%). However, in the multiple regression, after controlling for the S&P 500 and Shanghai Index, the coefficient changed to –0.0493, with a p-value of 0.726, indicating an even weaker and still insignificant effect. This reversal in sign and drop in explanatory power (with R-squared remaining at a mere 0.57%) suggests that gold’s impact on STI returns is negligible when considering the influence of other major market indices.Although we initially hypothesized a weak negative correlation due to gold’s traditional role as a safe haven, the results indicate that gold does not significantly influence STI performance in the short term. Instead, its utility likely lies in broader risk mitigation and portfolio diversification, especially during periods of market stress, rather than in predicting or driving stock index returns directly.
+
+- Shanghai Index: Initially showed a weak positive and statistically significant relationship with STI in the simple regression. However, when accounting for other factors in the multiple regression, its significance and explanatory power diminished. This suggests that while China remains an important economic partner, its stock market does not strongly drive STI performance, particularly when U.S. market movements are included in the model.
+
+Implications:  
+
+These findings suggest that Singaporean fund managers and investors should pay particular attention to the U.S. market when making portfolio decisions. The U.S. equity market has a meaningful influence on STI, supporting the case for international diversification that includes U.S. exposure. On the other hand, while China remains economically linked to Singapore, its stock market may not offer the same predictive power. Gold, while important for risk management, is not a key performance driver of STI in normal conditions.
+
+### 2. Limitations of the Study
+
+Despite the insights gained, our study has several limitations:
+
+- Omitted Variables: Our model includes only three predictors, excluding other potentially relevant factors like foreign exchange rates, interest rates, GDP growth, or geopolitical risks, which could also affect STI returns.
+
+- Time Period Constraints: The data covers 2014–2023, which includes several unique macroeconomic events (e.g., COVID-19, U.S.-China trade tensions, global inflation). The model may not fully generalise outside of this period or under different market regimes.
+
+- Assumptions of Linear Regression: Linear regression assumes a linear relationship between variables and constant variance. Non-linear or structural breaks in relationships are not captured in our models.
+
+### 3. Future Research Directions or Improvements
+
+To enhance the depth and robustness of this study, future research could consider:
+
+- Expanding the Asset Base: Include more global indices (e.g., Euro Stoxx 50, Nikkei 225), bonds, REITs, or alternative assets to see how broader diversification influences STI or Singaporean portfolio returns.
+
+- Macroeconomic Controls: Integrate additional variables such as GDP growth, inflation, interest rate differentials, exchange rates, and monetary policy indicators to isolate and better explain market co-movements.
+
+- Crisis Period Analysis: Segment the data into different regimes (e.g., COVID-19 vs. post-COVID) to assess whether correlations strengthen or weaken during periods of economic stress.
+
+
+## References 
+Brokerages see s’porean investors shifting away from local stocks to Us. The Straits Times. (2025, February 13). https://www.straitstimes.com/business/companies-markets/singapore-retail-stock-investors-look-to-buzzy-us-market
+
+Chan, R. (2024, March 20). CNA explains: Why did gold and global markets hit all-time highs at the same time? CNA. https://www.channelnewsasia.com/business/gold-stocks-global-markets-all-time-highs-record-investing-cna-explains-4195566
+
+Chen, J. (2024, June 29). SSE composite: Meaning, calculation, history. Investopedia. https://www.investopedia.com/terms/s/sse-composite.asp
+
+Chieh, C. T., & Suresh, V. M. (2024, September 3). The Fed’s impact on interest rates: What it means for investors in Singapore. https://www.lionglobalinvestors.com/en/insights/the-fed-s-impact-on-interest-rates-what-it-means-for-investors-in-singapore.html
+
+Choo, D. (2024, August 29). Is investing in the Straits Times Index alone enough? The Business Times. https://www.businesstimes.com.sg/thrive/money-talk/investing-straits-times-index-alone-enough
+
+Fund management in Singapore: A summary of the regulatory and tax framework (n.d.). Deloitte. https://www2.deloitte.com/content/dam/Deloitte/sg/Documents/tax/sg-tax-fund-management-in-singapore-15-sep-2021.pdf
+
+Gold as an investment: A safe haven for uncertain times. Tiesh. (2024, November 25). https://tiesh.lk/gold-as-an-investment-a-safe-haven-for-uncertain-times/?utm_source=chatgpt.com
+
+Gold Overview - CME Group. Futures & Options Trading for Risk Management. (2025, April 7). https://www.cmegroup.com/markets/metals/precious/gold.html
+
+Hayes, A. (2024, February 9). Futures contract definition: Types, mechanics, and uses in trading. Investopedia. https://www.investopedia.com/terms/f/futurescontract.asp
+
+Inflation fears tied to U.S. policies could boost Singapore Equities. Singapore Business Review. (2024, November 19). https://sbr.com.sg/markets/in-focus/inflation-fears-tied-us-policies-could-boost-singapore-equities
+
+International access. Shanghai Stock Exchange . (n.d.). https://english.sse.com.cn/aboutsse/internationalization/access/ 
+
+Kenton, W. (2024, June 12). S&P 500 index: What it’s for and why it’s important in investing. Investopedia. https://www.investopedia.com/terms/s/sp500.asp
+
+Market stress signals are flashing bright | Reuters. (2025, April 8). https://www.reuters.com/markets/global-markets-stress-2025-04-07/
+
+Ryan, M., Corbet, S., & Oxley, L. (2024). Is gold always a safe haven? Finance Research Letters, 64, 105438.
+
+Shanghai SSE Composite Index Sector Weightings. Siblis Research. (2025, March 19). https://siblisresearch.com/data/sse-composite-weightings/
+
+Sommer, J. (2025, March 28). Calm your investing life: Own a bit of everything. The New York Times. https://www.nytimes.com/2025/03/28/business/investing-international-stocks-bonds.html
+
+Sreenivasan, V. (2024, September 16). Singapore stocks could rally after Fed rate cut, say analysts. The Straits Times. https://www.straitstimes.com/business/singapore-stocks-could-rally-after-fed-rate-cut-say-analysts
+
+Statista Research Department. (2025, March 10). Leading Stock Exchange operators by market CAP 2025. Statista. https://www.statista.com/statistics/270126/largest-stock-exchange-operators-by-market-capitalization-of-listed-companies/?__sso_cookie_checker=failed
+
+Stocker, M., Lakatos, C., Ohnsorge, F., & Kose, M. A. (2017, February 27). Understanding the global role of the US economy | CEPR. https://cepr.org/voxeu/columns/understanding-global-role-us-economy
+
+Sue-Ann Tan, T. G. (2025, February 25). New $5 billion scheme by MAS to boost SGX-listed stocks as part of measures to revive S’pore market. The Straits Times. https://www.straitstimes.com/business/companies-markets/new-5-billion-scheme-by-mas-to-boost-spore-stocks-as-part-of-measures-to-revive-sgx
+
+TOI Business Desk. (2025, April 7). Global markets crash as Donald Trump Tariff Blitz sparks panic and retaliation. The Times of India. https://timesofindia.indiatimes.com/business/international-business/global-markets-crash-as-donald-trump-tariff-blitz-sparks-panic-and-retaliation/articleshow/120049303.cms
+
+Winkler, R., & Gallagher, D. (2025, April 4). Trump open to tariff negotiations, contradicting White House aides. The Wall Street Journal. https://www.wsj.com/livecoverage/trump-tariffs-trade-war-stock-market-04-03-2025/card/plenty-of-tariff-pain-for-big-tech-from-supply-chains-to-advertising-impact-mWo7CTPhMzNfgknCLGC7?
+
+Xiao, T. (2024, November 1). China-Singapore economic ties: Trade, investment, and opportunities. China Briefing News. https://www.china-briefing.com/news/china-singapore-economic-ties-trade-investment-and-opportunities/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
